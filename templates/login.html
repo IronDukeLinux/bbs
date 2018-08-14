@@ -66,7 +66,14 @@
     });
 
     $("#i1").click(function () {
-        this.src += "?"
+        // this.src += "?"
+        // 使用正则判断，如果原来的url有?就去掉，没有就加上
+        var url = this.src;
+        if (/\?$/.test(url)) {
+            this.src = url.slice(0, -1);
+        } else {
+            this.src = url + '?';
+        }
     })
 
 </script>

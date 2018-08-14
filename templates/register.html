@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎注册</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/bbs.css">
+</head>
+<body>
+{% csrf_token %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form class="login-form">
+                <div class="form-group">
+                    <label for="{{ form_obj.username.id_for_label }}">{{ form_obj.username.label }}</label>
+                    {{ form_obj.username }}
+                    <span class="help-block"></span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form_obj.password.id_for_label }}">{{ form_obj.password.label }}</label>
+                    {{ form_obj.password }}
+                    <span class="help-block"></span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form_obj.re_password.id_for_label }}">{{ form_obj.re_password.label }}</label>
+                    {{ form_obj.re_password }}
+                    <span class="help-block"></span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form_obj.phone.id_for_label }}">{{ form_obj.phone.label }}</label>
+                    {{ form_obj.phone }}
+                    <span class="help-block"></span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form_obj.email.id_for_label }}">{{ form_obj.email.label }}</label>
+                    {{ form_obj.email }}
+                    <span class="help-block"></span>
+                </div>
+                <div class="form-group">
+                    <label for="avatar">头像
+                        <img id="avatar-img" src="/static/default.png" alt="default" style="height: 80px;width: 80px;margin-left: 15px;">
+                    </label>
+                    <!-- accept表示接收文件的类型 -->
+                    <!-- label的for和input的id一致就可以在点击label标签内的内容时也触发input的上传文件 -->
+                    <input type="file" accept="image/*" id="avatar" style="display: none">
+                </div>
+                <button id="reg-btn" type="button" class="btn btn-default">注册</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery.js"></script>
+<script>
+
+    /* 没有上传用户头像的
+    $('#reg-btn').click(function () {
+        // 1.取到用户填写的数据
+        var username = $('#id_username').val();
+        var pwd = $('#id_password').val();
+        var re_pwd = $('#id_re_password').val();
+        var phone = $('#id_phone').val();
+        var email = $('#id_email').val();
+        var csrfToken = $('[name="csrfmiddlewaretoken"]').val();
+        // 2.往后端发post请求
+        $.ajax({
+            url: '/reg/',
+            type: 'post',
+            data: {
+                username: username,
+                password: pwd,
+                re_password: re_pwd,
+                phone: phone,
+                email: email,
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function (res) {
+                if (res.code === 0) {
+                    // 注册成功
+                    location.href = res.msg;
+                } else if (res.code === 1) {
+                    console.log(res.msg);
+                    // 遍历出所有错误信息，在页面上展示出来
+                    $.each(res.msg, function (k, v) {
+                        $('#id_'+k).next().text(v[0]).parent().addClass('has-error');
+                    })
+                }
+            }
+        })
+    });
+    */
+
+    // 有上传用户头像的功能的
+    $('#reg-btn').click(function () {
+        // 1.取到用户填写的数据
+        var fd = new FormData();
+        fd.append("username", $("#id_username").val());
+        fd.append("password", $("#id_password").val());
+        fd.append("re_password", $("#id_re_password").val());
+        fd.append("phone", $("#id_phone").val());
+        fd.append("email", $("#id_email").val());
+        fd.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+        fd.append('avatar', $("#avatar")[0].files[0]);
+        // 2.往后端发post请求
+        $.ajax({
+            url: '/reg/',
+            type: 'post',
+            data: fd,
+            processData: false,  // 不让jQuery对数据进行处理
+            contentType: false,  // 不让jQuery对内容类型进行处理
+            success: function (res) {
+                if (res.code === 0) {
+                    // 注册成功
+                    location.href = res.msg;
+                } else if (res.code === 1) {
+                    console.log(res.msg);
+                    // 遍历出所有错误信息，在页面上展示出来
+                    $.each(res.msg, function (k, v) {
+                        $('#id_'+k).next().text(v[0]).parent().addClass('has-error');
+                    })
+                }
+            }
+        })
+    });
+
+
+
+    // 每个input标签获取焦点的时候，把自己input的内容清空，下面的span标签清空，把父标签的has-error样式清除
+    $('input.form-control').focus(function () {
+        $(this).val('').next('span').text('').parent().removeClass('has-error');
+    });
+
+    // 前端页面实现头像预览
+    // 当用户选中文件后，也就是头像的input标签有值的时候触发
+    $('#avatar').change(function () {
+        // 找到用户选中的文件
+        var file = this.files[0];
+        // 生成一个读文件的对象
+        var fr = new FileReader();
+        // 从文件中读取头像文件数据
+        fr.readAsDataURL(file);
+        // 等到读完之后
+        fr.onload = function (ev) {
+            // 将头像img标签的src属性更换成我选中的属性
+            $('#avatar-img').attr('src', fr.result);
+        }
+    })
+</script>
+</body>
+</html>

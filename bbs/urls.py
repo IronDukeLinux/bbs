@@ -16,10 +16,19 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from blog import views
+from django.views.static import serve
+from django.conf import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/', views.Login.as_view()),
+    url(r'^login2/$', views.login2),  # 滑动验证码
+    url(r'^pcgetcaptcha/$', views.pcgetcaptcha),  # 生成滑动验证码的初始数据
     url(r'^index/', views.Index.as_view()),
-    url(r'^v-code/$', views.v_code),
+    url(r'^v-code/$', views.v_code),  # 验证码
+
+    url(r'^reg/$', views.RegView.as_view()),  # 注册
+
+    # 给用户上传文件 配置一个处理的路由
+    url(r'^media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),
 ]
