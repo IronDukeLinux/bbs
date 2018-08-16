@@ -81,6 +81,12 @@ class Article(models.Model):
         through_fields=('article', 'tag'),
     )
 
+    # 评论数
+    comment_count = models.IntegerField(default=0)
+    # 点赞数
+    up_count = models.IntegerField(default=0)
+    down_count = models.IntegerField(default=0)
+
     def __str__(self):
         return self.title
 

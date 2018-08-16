@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse
 from django import views
 from blog.forms import LoginForm, RegisterForm
@@ -9,6 +9,7 @@ from io import BytesIO  # 对内存进行操作
 from django.views.decorators.cache import never_cache  # 告诉浏览器不要缓存数据
 from utils.geetest import GeetestLib
 from blog import models
+from utils.mypage import MyPage
 # Create your views here.
 
 
@@ -96,9 +97,16 @@ class Login(views.View):
 # 首页
 class Index(views.View):
 
-    @staticmethod
-    def get(request):
-        return render(request, 'index.html')
+    def get(self, request):
+        article_list = models.Article.objects.all()
+        # 分页
+        data_amount = article_list.count()
+        page_num = request.GET.get('page', 1)
+        page_obj = MyPage(page_num, data_amount, request.path_info, per_page=2)
+        # 按照分页的设置对总数据进行切片
+        data = article_list[page_obj.start:page_obj.end]
+        page_html = page_obj.page_html()
+        return render(request, 'index.html', {'article_list': data, 'page_html': page_html})
 
 
 # 专门用来返回验证码图片的视图
@@ -194,7 +202,7 @@ class RegView(views.View):
             avatar_file = request.FILES.get('avatar')
             # 直接将拿到的文件对象传给avatar字段就可以完成写文件，和将文件路径存入数据库的操作
             # 前提ORM定义的字段得是FileField，这是ORM的功能，和mysql数据库无关
-            models.UserInfo.objects.create_user(**form_obj.cleaned_data, avatar=avatar_file)
+            models.UserInfo.objects.create_superuser(**form_obj.cleaned_data, avatar=avatar_file)
             # 登录成功之后跳转到登录页面
             res['msg'] = '/login/'
         else:
@@ -202,3 +210,16 @@ class RegView(views.View):
             res['code'] = 1
             res['msg'] = form_obj.errors
         return JsonResponse(res)
+
+
+# 注销
+def logout2(request):
+    logout(request)
+    return redirect('/login/')
+
+
+# 用户站点
+def mysite(request):
+    ironduke1234 = models.UserInfo.objects.get(username='ironduke1234')
+    color_list = ['primary', 'success', 'info', 'warning', 'danger']
+    return render(request, 'mysite.html', {'ironduke1234': ironduke1234, 'color_list': color_list})

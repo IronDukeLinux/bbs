@@ -28,7 +28,11 @@ urlpatterns = [
     url(r'^v-code/$', views.v_code),  # 验证码
 
     url(r'^reg/$', views.RegView.as_view()),  # 注册
+    url(r'^logout/$', views.logout2),
 
     # 给用户上传文件 配置一个处理的路由
     url(r'^media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),
+
+    # 用户的博客站点
+    url(r'^ironduke1234/', views.mysite),
 ]
