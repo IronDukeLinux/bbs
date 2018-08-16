@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.http import JsonResponse
 from django import views
 from blog.forms import LoginForm, RegisterForm
@@ -10,6 +10,7 @@ from django.views.decorators.cache import never_cache  # 告诉浏览器不要�
 from utils.geetest import GeetestLib
 from blog import models
 from utils.mypage import MyPage
+from django.db.models import Count
 # Create your views here.
 
 
@@ -219,7 +220,67 @@ def logout2(request):
 
 
 # 用户站点
-def mysite(request):
-    ironduke1234 = models.UserInfo.objects.get(username='ironduke1234')
+def mysite(request, username, *args):
+    # 拿到用户对象
+    # user_obj = models.UserInfo.objects.get(username=username)
+    user_obj = get_object_or_404(models.UserInfo, username=username)
+
+    # 拿到用户关联的博客站点对象
+    blog = user_obj.blog
+
+    # 查找博客站点有哪些文章分类
+    # category_list = models.Category.objects.filter(blog_id=blog.id)
+    category_list = models.Category.objects.filter(blog=blog)
+
+    # 查找博客站点有哪些文章标签
+    # tag_list = models.Tag.objects.filter(blog_id=blog.id)
+    tag_list = models.Tag.objects.filter(blog=blog)
+
+    # 对当前blog的所有文章按照年月 分组 查询
+    # 1。查询出当前作者写的所有文章
+    # article_list = user_obj.article_set.all()
+    # print('1', article_list)
+    # 2。将所有查出的文章的创建时间格式化成年-月的格式，方便后续分组
+    # article_list = article_list.extra(select={'y_m': 'DATE_FORMAT(create_time, "%%Y-%%m")'})
+    # print('2', article_list)
+    # 3。根据主y_m字段进行分组，统计每个分组的文章数
+    # article_list = article_list.values('y_m').annotate(c=Count('id'))
+    # print('3', article_list)
+    # 4。把页面需要的日期归档和文章数量字段取出来
+    # article_list = article_list.values('y_m', 'c')
+    # print('4', article_list)
+    archive_list = user_obj.article_set.all().extra(
+        select={'y_m': 'DATE_FORMAT(create_time, "%%Y-%%m")'}
+    ).values('y_m').annotate(c=Count('id'))
+
+    # 查找博客站点博主的所有文章
+    article_list = user_obj.article_set.all()
+
+    # 如果没有args表示路由没有传参数，则返回所有文章
+    if args:
+        if args[0] == 'category':
+            # 按照文章分类查询
+            article_list = article_list.filter(category__title=args[1])
+        elif args[0] == 'tag':
+            # 按照文章标签查询
+            article_list = article_list.filter(tags__title=args[1])
+        elif args[0] == 'archive':
+            # 按照文章日期归档查询
+            try:
+                year, month = args[1].split('-')
+                article_list = article_list.filter(create_time__year=year, create_time__month=month)
+            except ValueError as e:
+                article_list = []
+        else:
+            pass
+
     color_list = ['primary', 'success', 'info', 'warning', 'danger']
-    return render(request, 'mysite.html', {'ironduke1234': ironduke1234, 'color_list': color_list})
+    return render(request, 'mysite.html', {
+        'blog': blog,
+        'category_list': category_list,
+        'tag_list': tag_list,
+        'user_obj': user_obj,
+        'article_list': article_list,
+        'archive_list': archive_list,
+        'color_list': color_list
+    })
