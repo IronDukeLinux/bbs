@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog.apps.BlogConfig',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'bbs.urls'
@@ -118,6 +120,7 @@ USE_I18N = True
 
 USE_L10N = True
 
+# 告诉django不使用时区
 USE_TZ = False
 
 
@@ -134,3 +137,12 @@ AUTH_USER_MODEL = 'blog.UserInfo'
 # 用户上传的文件位置
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 本机调试
+INTERNAL_IPS = ['127.0.0.1', ]
+# django-debug-toolbar 默认使用的是Google的地址，默认配置如下：
+# JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'
+# 国内用不了的话可以在settings.py中配置一下，例如
+DEBUG_TOOLBAR_CONFIG = {
+    "JQUERY_URL": '//cdn.bootcss.com/jquery/2.2.4/jquery.min.js',
+}

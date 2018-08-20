@@ -1,0 +1,95 @@
+{% load blog_filters %}
+<!-- 左侧栏 开始 -->
+<div class="col-md-3">
+    <!-- 文章分类 开始 -->
+    <div>
+        <table class="table table-condensed">
+            <thead>
+            <tr class="{{ color_list|che }}">
+                <th><h3>&nbsp;&nbsp;导航</h3></th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 文章标签 -->
+            <tr class="{{ color_list|che }}">
+                <td>
+                    <table class="table table-condensed">
+                        <thead>
+                        <tr class="{{ color_list|che }}">
+                            <th>文章标签</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tag in tag_list %}
+                            <tr class="{{ color_list|che }}">
+                                <td>
+                                    <a href="/blog/{{ user_obj.username }}/tag/{{ tag.title }}">{{ tag.title }}({{ tag.article2tag_set.all.count }})</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <!-- 日期归档 -->
+            <tr class="{{ color_list|che }}">
+                <td>
+                    <table class="table table-condensed">
+                        <thead>
+                        <tr class="{{ color_list|che }}">
+                            <th>日期归档</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for archive in archive_list %}
+                            <tr class="{{ color_list|che }}">
+                                <td>
+                                    <a href="/blog/{{ user_obj.username }}/archive/{{ archive.y_m }}">{{ archive.y_m }}({{ archive.c }})</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <!-- 文章分类 -->
+            <tr class="{{ color_list|che }}">
+                <td>
+                    <table class="table table-condensed">
+                        <thead>
+                        <tr class="{{ color_list|che }}">
+                            <th>文章分类</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+{#                                {% for category in user_obj.blog.category_set.all %}#}
+                        {% for category in category_list %}
+                            <tr class="{{ color_list|che }}">
+                                <td>
+                                    <a href="/blog/{{ user_obj.username }}/category/{{ category.title }}">
+                                        <button class="btn btn-{{ color_list|che }}" type="button" style="width: 100%">
+                                        {{ category.title }}
+                                        <span class="badge">{{ category.article_set.all.count }}</span>
+                                    </button>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr class="{{ color_list|che }}">
+                <td>
+                    <div style="height: 100px"></div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+
+    </div>
+    <!-- 文章分类 结束 -->
+
+</div>
+<!-- 左侧栏 结束 -->

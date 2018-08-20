@@ -102,6 +102,9 @@ class ArticleDetail(models.Model):
     content = models.TextField()  # 文章内容
     article = models.OneToOneField(to='Article')
 
+    def __str__(self):
+        return self.article
+
     class Meta:
         verbose_name = '文章详情'
         verbose_name_plural = verbose_name
@@ -149,7 +152,7 @@ class Comment(models.Model):
     content = models.CharField(max_length=255)  # 评论内容
     create_time = models.DateTimeField(auto_now_add=True)
 
-    parent_comment = models.ForeignKey('self', null=True)  # 自己关联自己
+    parent_comment = models.ForeignKey('self', null=True, blank=True)  # 自己关联自己
 
     def __str__(self):
         return self.content

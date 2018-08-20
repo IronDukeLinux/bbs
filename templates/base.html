@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ blog.title }}</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/blog.css">
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Brand</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+                <li><a href="#">Link</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">Dropdown <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#">{{ request.user.username }}</a>
+                </li>
+                <li>
+                    <img src="/media/{{ request.user.avatar }}" alt=""
+                         style="height: 50px;width: 50px;border-radius: 50%">
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">Dropdown <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="/logout/">注销</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+{% load blog_filters %}
+<div class="container-fluid">
+    <!-- 左侧广告区 开始 -->
+    <div class="col-md-1">
+        <div class="panel panel-{{ color_list|che }}" style="margin-top: 80px">
+            <div class="panel-heading">
+                <h6 class="panel-title">广告</h6>
+            </div>
+            <div class="panel-body">
+                <h3>永不退缩的广告位</h3>
+            </div>
+        </div>
+    </div>
+    <!-- 左侧广告区 结束 -->
+
+    <!-- 站点主体内容 开始 -->
+    <div class="col-md-10">
+        <!-- 左侧栏 开始 -->
+        <div class="col-md-3">
+            <!-- 分类 -->
+            {% left_menu username %}
+        </div>
+        <!-- 左侧栏 结束 -->
+
+        <!-- 右侧栏 开始 -->
+        <div class="col-md-9">
+            {% block page-main %}
+                <!-- 右侧主体内容 -->
+            {% endblock page-main %}
+        </div>
+        <!-- 右侧栏 结束 -->
+    </div>
+    <!-- 站点主体内容 结束 -->
+
+    <!-- 右侧广告区 结束 -->
+    <div class="col-md-1">
+        <div class="panel panel-{{ color_list|che }}" style="margin-top: 80px">
+            <div class="panel-heading">
+                <h6 class="panel-title">广告</h6>
+            </div>
+            <div class="panel-body">
+                <h3>永不退缩的广告位</h3>
+            </div>
+        </div>
+    </div>
+    <!-- 右侧广告区 结束 -->
+</div>
+
+<script src="/static/js/jquery.js"></script>
+<script src="/static/bootstrap-3.3.7/js/bootstrap.js"></script>
+{% block page-js %}
+    <!-- js代码 -->
+{% endblock page-js %}
+</body>
+</html>
