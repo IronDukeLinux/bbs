@@ -40,8 +40,10 @@ urlpatterns = [
 
     # 点赞功能
     url(r'^up_down/', views.up_down),
-    # 评论
-    url(r'^comment/', views.comment),
+    # 评论楼
+    url(r'^comment/$', views.comment),
+    # 评论树
+    url(r'^comment/(\d+)', views.Comment.as_view()),
 
     url(r'^$', views.Index.as_view()),
 ]

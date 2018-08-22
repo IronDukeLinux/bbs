@@ -12,6 +12,9 @@ from blog import models
 from utils.mypage import MyPage
 from django.db.models import Count, F
 from django.db import transaction
+from bs4 import BeautifulSoup
+import os
+from django.conf import settings
 # Create your views here.
 
 
@@ -303,7 +306,7 @@ def article(request, username, id):
     color_list = ['primary', 'success', 'info', 'warning', 'danger']
     # 找到当前文章的评论
     comment_list = models.Comment.objects.filter(article=article_obj)
-    return render(request, 'article.html', {
+    return render(request, 'article2.html', {
         'blog': blog,
         'username': username,
         'article': article_obj,
@@ -389,4 +392,163 @@ def comment(request):
                 'username': comment_obj.user.username,
             }
         return JsonResponse(res)
+
+
+# 评论树形式
+class Comment(views.View):
+
+    def get(self, request, article_id):
+        res = {'code': 0}
+        comment_list = models.Comment.objects.filter(article_id=article_id)
+        data = [{
+            'id': comment.id,
+            'create_time': comment.create_time.strftime("%Y-%m-%d %H:%M"),
+            'content': comment.content,
+            'username': comment.user.username,
+            'pid': comment.parent_comment_id,
+        } for comment in comment_list]
+        res['data'] = data
+        return JsonResponse(res)
+
+    def post(self, request, id):
+        res = {'code': 0}
+        article_id = request.POST.get('article_id')
+        content = request.POST.get('content')
+        user_id = request.POST.get('user_id')
+        parent_id = request.POST.get('parent_id')
+
+        # 评论相关添加到数据库
+        with transaction.atomic():
+            # 1. 创建新评论
+            if parent_id:
+                # 如果有parent_id则是创建子评论
+                comment_obj = models.Comment.objects.create(
+                    content=content,
+                    user_id=user_id,
+                    article_id=article_id,
+                    parent_comment_id=parent_id)
+            else:
+                # 没有则是创建父评论
+                comment_obj = models.Comment.objects.create(
+                    content=content,
+                    user_id=user_id,
+                    article_id=article_id,
+                )
+            # 2. 更新文章表中的comment_count字段
+            models.Article.objects.filter(id=article_id).update(comment_count=F('comment_count')+1)
+            res['data'] = {
+                'id': comment_obj.id,
+                'comment': comment_obj.content,
+                'create_time': comment_obj.create_time.strftime("%Y-%m-%d %H:%M"),
+                'username': comment_obj.user.username,
+            }
+        return JsonResponse(res)
+
+
+# 后台管理
+def backend(request):
+    article_list = models.Article.objects.filter(user=request.user)
+    return render(request, 'backend.html', {'article_list': article_list})
+
+
+# 添加文章
+def add_article(request):
+    if request.method == 'POST':
+        # 获取用户填写的文章内容
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        category_id = request.POST.get('category')
+
+        # 对用户发布的文章内容进行清洗， 去掉script标签
+        soup = BeautifulSoup(content, 'html.parser')
+        script_list = soup.select("script")
+        for i in script_list:
+            i.decompose()  # 删除
+
+        # 将清洗过的数据写入数据库
+        # 因为文章记录和文章详情记录是记在两张表中，所以需要事务操作
+        with transaction.atomic():
+            # 1. 创建文章记录
+            article_obj = models.Article.objects.create(
+                title=title,
+                desc=soup.text[0:150],
+                user=request.user,
+                category_id=category_id,
+            )
+            # 2. 创建文章详情记录
+            models.ArticleDetail.objects.create(
+                content=soup.prettify(),
+                article=article_obj,
+            )
+        return redirect('/blog/backend')
+    # 查询当前博客的文章分类
+    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    return render(request, "add_article.html", {"category_list": category_list})
+
+
+# 富文本编辑器的图片上传
+def upload(request):
+    res = {'error': 0}
+    file_obj = request.FILES.get("imgFile")
+    file_path = os.path.join(settings.MEDIA_ROOT, "article_imgs", file_obj.name)
+    with open(file_path, 'wb') as f:
+        for chunk in file_obj.chunks():
+            f.write(chunk)
+    url = "/media/article_imgs/" + file_obj.name
+    res['url'] = url
+    return JsonResponse(res)
+
+
+# 删除文章
+def del_article(request, article_id):
+    with transaction.atomic():
+        # 1. 删除文章详情
+        models.ArticleDetail.objects.filter(article_id=article_id).delete()
+        # 2. 删除文章
+        models.Article.objects.filter(id=article_id).delete()
+        pass
+    return redirect('/blog/backend/')
+
+
+# 编辑文章
+def edi_article(request, article_id):
+    if request.method == "POST":
+        # 获取用户填写的文章内容
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        category_id = request.POST.get('category')
+
+        # 对用户发布的文章内容进行清洗， 去掉script标签
+        soup = BeautifulSoup(content, 'html.parser')
+        script_list = soup.select("script")
+        for i in script_list:
+            i.decompose()  # 删除
+
+        # 将清洗过的数据写入数据库
+        # 因为文章记录和文章详情记录是记在两张表中，所以需要事务操作
+        with transaction.atomic():
+            # 1. 创建文章记录
+            models.Article.objects.filter(id=article_id).update(
+                title=title,
+                desc=soup.text[0:150],
+                user=request.user,
+                category_id=category_id,
+            )
+            # 2. 创建文章详情记录
+            models.ArticleDetail.objects.filter(article_id=article_id).update(
+                content=soup.prettify(),
+            )
+        return redirect('/blog/backend/')
+
+    with transaction.atomic():
+        article_obj = models.Article.objects.filter(id=article_id).first()
+        article_detail = models.ArticleDetail.objects.filter(article=article_obj).first()
+    # 查询当前博客的文章分类
+    print(article_detail.content)
+    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    return render(request, "edi_article.html", {
+        "category_list": category_list,
+        "article_obj": article_obj,
+        "article_detail": article_detail,
+    })
 

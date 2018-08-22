@@ -23,7 +23,7 @@
                         {% for tag in tag_list %}
                             <tr class="{{ color_list|che }}">
                                 <td>
-                                    <a href="/blog/{{ user_obj.username }}/tag/{{ tag.title }}">{{ tag.title }}({{ tag.article2tag_set.all.count }})</a>
+                                    <a href="/blog/{{ username }}/tag/{{ tag.title }}">{{ tag.title }}({{ tag.article2tag_set.all.count }})</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -44,7 +44,7 @@
                         {% for archive in archive_list %}
                             <tr class="{{ color_list|che }}">
                                 <td>
-                                    <a href="/blog/{{ user_obj.username }}/archive/{{ archive.y_m }}">{{ archive.y_m }}({{ archive.c }})</a>
+                                    <a href="/blog/{{ username }}/archive/{{ archive.y_m }}">{{ archive.y_m }}({{ archive.c }})</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -66,7 +66,7 @@
                         {% for category in category_list %}
                             <tr class="{{ color_list|che }}">
                                 <td>
-                                    <a href="/blog/{{ user_obj.username }}/category/{{ category.title }}">
+                                    <a href="/blog/{{ username }}/category/{{ category.title }}">
                                         <button class="btn btn-{{ color_list|che }}" type="button" style="width: 100%">
                                         {{ category.title }}
                                         <span class="badge">{{ category.article_set.all.count }}</span>
